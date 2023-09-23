@@ -9,5 +9,6 @@
     "javascriptreact": "javascriptreact",
     "javascript": "javascript",
     "html": "html"
-  }
+  },
+  "files.autoSave": "onFocusChange"
 }
