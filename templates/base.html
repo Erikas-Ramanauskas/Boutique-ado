@@ -132,13 +132,37 @@
     </header>
 
     {% if messages %}
-    <div class="message-container"></div>
+    <div class="message-container">
+       {% for message in messages %}
+                {% with message.level as level %}
+                    {% if level == 40 %}
+                        {% include 'includes/toasts/toast_error.html' %}
+                    {% elif level == 30 %}
+                        {% include 'includes/toasts/toast_warning.html' %}
+                    {% elif level == 25 %}
+                        {% include 'includes/toasts/toast_success.html' %}
+                    {% else %}
+                        {% include 'includes/toasts/toast_info.html' %}
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+    </div>
     {% endif %} 
     {% block page_header %} 
     {% endblock %} 
     {% block content %} 
     {% endblock %} 
-    {% block postloadjs %}                              
+    {% block postloadjs %}
+    <script type="text/javascript">
+      // Get all elements with the class "toast"
+      const toastElements = document.querySelectorAll('.toast');
+
+      // Iterate through the elements and trigger the "show" action
+      toastElements.forEach(function(toastElement) {
+          const bootstrapToast = new bootstrap.Toast(toastElement);
+          bootstrapToast.show();
+      });
+    </script>
     {% endblock %}
   </body>
 </html>
