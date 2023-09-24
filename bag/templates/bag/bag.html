@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load bag_tools %}
 
 {% block page_header %}
     <div class="container header-container">
@@ -84,7 +83,7 @@
                                         <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-product_size="{{ item.size }}"><small>Remove</small></a>
                                     </td>
                                     <td class="py-3">
-                                        <p class="my-0">${{ item.product.price | calc_subtotal:item.quantity }}</p>
+                                        <p class="my-0">${{ item.product.price }}</p>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -108,7 +107,7 @@
                                         </span>
                                         <span class="text-uppercase">Keep Shopping</span>
                                     </a>
-                                    <a href="" class="btn btn-black rounded-0 btn-lg">
+                                    <a href="{% url 'checkout' %}" class="btn btn-black rounded-0 btn-lg">
                                         <span class="text-uppercase">Secure Checkout</span>
                                         <span class="icon">
                                             <i class="fas fa-lock"></i>
@@ -137,24 +136,46 @@
 {% include 'products/includes/quantity_input_script.html' %}
 
 <script type="text/javascript">
-    // Update quantity on click
-    $('.update-link').click(function(e) {
-        var form = $(this).prev('.update-form');
+ // Update quantity on click
+document.querySelectorAll('.update-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const form = this.previousElementSibling;
         form.submit();
-    })
+    });
+});
 
-    // Remove item and reload on click
-    $('.remove-item').click(function(e) {
-        var csrfToken = "{{ csrf_token }}";
-        var itemId = $(this).attr('id').split('remove_')[1];
-        var size = $(this).data('product_size');
-        var url = `/bag/remove/${itemId}/`;
-        var data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size};
+// Remove item and reload on click
+document.querySelectorAll('.remove-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const csrfToken = "{{ csrf_token }}"; // Note: Replace this with the actual value
+        const itemId = this.id.split('remove_')[1];
+        const size = this.getAttribute('data-size');
+        const url = `/bag/remove/${itemId}/`;
+        const data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size};
 
-        $.post(url, data)
-         .done(function() {
-             location.reload();
-         });
-    })
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(function(response) {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(function() {
+            location.reload();
+        })
+        .catch(function(error) {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    });
+});
+
 </script>
 {% endblock %}
